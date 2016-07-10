@@ -8,6 +8,7 @@
 // #include <iostream>
 // using std::cout;
 // using std::endl;
+#include <sstream>
 
 // ANC, abbreviation of ANCESTOR for binary heaps
 #define ANC(i) ((i - 1) >> 1)
@@ -47,8 +48,8 @@ private:
 		// swap corresponding elements in _fmap & _bmap
 		if (in_gh) {
 			_bmap[i].g_key.swap(_bmap[j].g_key);
-			_fmap[_bmap[j].g_key].ind = i;
-			_fmap[_bmap[i].g_key].ind = j;
+			_fmap[_bmap[j].g_key].ind = j;
+			_fmap[_bmap[i].g_key].ind = i;
 		} else {
 			_bmap[i].l_key.swap(_bmap[j].l_key);
 			_fmap[_bmap[j].l_key].ind = j;
@@ -356,6 +357,47 @@ public:
 
 	bool contains(std::string name) const {
 		return _fmap.count(name) != 0;
+	}
+
+	std::string dump() const {
+		std::stringstream ss;
+
+		// dump _lh
+		ss << "----- _lh -----\n";
+		for (uint32_t x : _lh) {
+			ss << x << ' ';
+		}
+		ss << "\n\n";
+
+		// dump _gh
+		ss << "----- _gh -----\n";
+		for (uint32_t x : _gh) {
+			ss << x << ' ';
+		}
+		ss << "\n\n";
+
+		// dump _fmap
+		ss << "----- _fmap -----\n";
+		for (auto const& p : _fmap) {
+			ss << p.first << " : (";
+			ss << p.second.ind << ", ";
+			ss << (p.second.in_gh ? "true" : "false") << ")\n";
+		}
+		ss << '\n';
+
+		// dump _bmap
+		ss << "----- _bmap -----\n";
+		for (auto const& p : _bmap) {
+			ss << p.first << '\n';
+			if (!p.second.g_key.empty()) {
+				ss << "  g: " << p.second.g_key << '\n';
+			}
+			if (!p.second.l_key.empty()) {
+				ss << "  l: " << p.second.l_key << '\n';
+			}
+		}
+
+		return ss.str();
 	}
 
 };

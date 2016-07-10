@@ -76,112 +76,112 @@ TEST(MedHeapMapTest, InsertWorks) {
 	EXPECT_EQ(med_heap.degree("Shaggy"), 1);
 }
 
-// TEST(MedHeapMapTest, IncreaseKeyWorks) {
-// 	MedHeapMap med_heap;
-// 	size_t old_size;
+TEST(MedHeapMapTest, IncreaseKeyWorks) {
+	MedHeapMap med_heap;
+	size_t old_size;
 
-// 	med_heap.insert("Adam-West");
-// 	med_heap.insert("Professor-Oak");
+	med_heap.insert("Adam-West");
+	med_heap.insert("Professor-Oak");
 
-// 	old_size = med_heap.size();
-// 	med_heap.increase_key("Adam-West");
-// 	ASSERT_EQ(med_heap.degree("Adam-West"), 2);
-// 	ASSERT_LT(size_t(abs(med_heap.size_lh() - med_heap.size_gh())), 2) <<
-// 		"Median Heap isn't balanced:\n  med_heap.size_lh() == " <<
-// 		med_heap.size_lh() << "\n  med_heap.size_gh() == " <<
-// 		med_heap.size_gh();
-// 	ASSERT_EQ(old_size, med_heap.size()) << "increase_key() modified size";
-// 	med_heap.insert("Christina-Mitchens");
+	old_size = med_heap.size();
+	med_heap.increase_key("Adam-West");
+	ASSERT_EQ(med_heap.degree("Adam-West"), 2);
+	ASSERT_LT(size_t(abs(med_heap.size_lh() - med_heap.size_gh())), 2) <<
+		"Median Heap isn't balanced:\n  med_heap.size_lh() == " <<
+		med_heap.size_lh() << "\n  med_heap.size_gh() == " <<
+		med_heap.size_gh();
+	ASSERT_EQ(old_size, med_heap.size()) << "increase_key() modified size";
+	med_heap.insert("Christina-Mitchens");
 
-// 	old_size = med_heap.size();
-// 	med_heap.increase_key("Christina-Mitchens");
-// 	ASSERT_EQ(med_heap.degree("Christina-Mitchens"), 2);
-// 	ASSERT_LT(size_t(abs(med_heap.size_lh() - med_heap.size_gh())), 2) <<
-// 		"Median Heap isn't balanced:\n  med_heap.size_lh() == " <<
-// 		med_heap.size_lh() << "\n  med_heap.size_gh() == " <<
-// 		med_heap.size_gh();
-// 	ASSERT_EQ(old_size, med_heap.size()) << "increase_key() modified size";
-// 	med_heap.insert("Hillary-Clinton");
+	old_size = med_heap.size();
+	med_heap.increase_key("Christina-Mitchens");
+	ASSERT_EQ(med_heap.degree("Christina-Mitchens"), 2);
+	ASSERT_LT(size_t(abs(med_heap.size_lh() - med_heap.size_gh())), 2) <<
+		"Median Heap isn't balanced:\n  med_heap.size_lh() == " <<
+		med_heap.size_lh() << "\n  med_heap.size_gh() == " <<
+		med_heap.size_gh();
+	ASSERT_EQ(old_size, med_heap.size()) << "increase_key() modified size";
+	med_heap.insert("Hillary-Clinton");
 
-// 	old_size = med_heap.size();
-// 	cout << "before increasing adam west: " << med_heap.degree("Adam-West") << endl;
-// 	med_heap.increase_key("Adam-West");
-// 	ASSERT_EQ(med_heap.degree("Adam-West"), 3);
-// 	ASSERT_LT(size_t(abs(med_heap.size_lh() - med_heap.size_gh())), 2) <<
-// 		"Median Heap isn't balanced:\n  med_heap.size_lh() == " <<
-// 		med_heap.size_lh() << "\n  med_heap.size_gh() == " <<
-// 		med_heap.size_gh();
-// 	ASSERT_EQ(old_size, med_heap.size()) << "increase_key() modified size";
-// 	med_heap.increase_key("Hillary-Clinton");
+	old_size = med_heap.size();
+	cout << "before increasing adam west: " << med_heap.degree("Adam-West") << endl;
+	med_heap.increase_key("Adam-West");
+	ASSERT_EQ(med_heap.degree("Adam-West"), 3);
+	ASSERT_LT(size_t(abs(med_heap.size_lh() - med_heap.size_gh())), 2) <<
+		"Median Heap isn't balanced:\n  med_heap.size_lh() == " <<
+		med_heap.size_lh() << "\n  med_heap.size_gh() == " <<
+		med_heap.size_gh();
+	ASSERT_EQ(old_size, med_heap.size()) << "increase_key() modified size";
+	med_heap.increase_key("Hillary-Clinton");
 
-// 	EXPECT_EQ(med_heap.degree("Adam-West"), 3);
-// 	EXPECT_EQ(med_heap.degree("Professor-Oak"), 1);
-// 	EXPECT_EQ(med_heap.degree("Christina-Mitchens"), 2);
-// 	EXPECT_EQ(med_heap.degree("Hillary-Clinton"), 2);
-// }
+	EXPECT_EQ(med_heap.degree("Adam-West"), 3);
+	EXPECT_EQ(med_heap.degree("Professor-Oak"), 1);
+	EXPECT_EQ(med_heap.degree("Christina-Mitchens"), 2);
+	EXPECT_EQ(med_heap.degree("Hillary-Clinton"), 2);
+}
 
-// TEST(MedHeapMapTest, EraseWorks) {
-// 	MedHeapMap med_heap;
-// 	med_heap.insert("Adam-West");
-// 	med_heap.insert("Professor-Oak");
-// 	med_heap.insert("Christina-Mitchens");
-// 	med_heap.insert("Hillary-Clinton");
-// 	med_heap.insert("Benjamin-Button");
-// 	med_heap.insert("Charlie-bitmyfinger-Unicorn");
-// 	med_heap.insert("Hilnold-Trumpton");
-// 	med_heap.insert("Shaggy");
+TEST(MedHeapMapTest, EraseWorks) {
+	MedHeapMap med_heap;
+	med_heap.insert("Adam-West");
+	med_heap.insert("Professor-Oak");
+	med_heap.insert("Christina-Mitchens");
+	med_heap.insert("Hillary-Clinton");
+	med_heap.insert("Benjamin-Button");
+	med_heap.insert("Charlie-bitmyfinger-Unicorn");
+	med_heap.insert("Hilnold-Trumpton");
+	med_heap.insert("Shaggy");
 
-// 	med_heap.erase("Benjamin-Button");
-// 	ASSERT_EQ(med_heap.size(), 7) <<
-// 		"med_heap tried to delete 1 node from 8, expecting 7, "
-// 		"but there remained " <<
-// 		med_heap.size() << " nodes.";
-// 	ASSERT_FALSE(med_heap.contains("Benjamin-Button")) <<
-// 		"Benjamin-Button was erased, but it still shows up in "
-// 		"med_heap.";
+	med_heap.erase("Benjamin-Button");
+	ASSERT_EQ(med_heap.size(), 7) <<
+		"med_heap tried to delete 1 node from 8, expecting 7, "
+		"but there remained " <<
+		med_heap.size() << " nodes.";
+	ASSERT_FALSE(med_heap.contains("Benjamin-Button")) <<
+		"Benjamin-Button was erased, but it still shows up in "
+		"med_heap.";
 
-// 	med_heap.erase("Shaggy");
-// 	ASSERT_EQ(med_heap.size(), 6) <<
-// 		"med_heap tried to delete 1 node from 7, expecting 6, "
-// 		"but there remained " <<
-// 		med_heap.size() << " nodes.";
+	med_heap.erase("Shaggy");
+	ASSERT_EQ(med_heap.size(), 6) <<
+		"med_heap tried to delete 1 node from 7, expecting 6, "
+		"but there remained " <<
+		med_heap.size() << " nodes.";
 
-// 	med_heap.erase("Professor-Oak");
-// 	ASSERT_EQ(med_heap.size(), 5) <<
-// 		"med_heap tried to delete 1 node from 6, expecting 5, "
-// 		"but there remained " <<
-// 		med_heap.size() << " nodes.";
+	med_heap.erase("Professor-Oak");
+	ASSERT_EQ(med_heap.size(), 5) <<
+		"med_heap tried to delete 1 node from 6, expecting 5, "
+		"but there remained " <<
+		med_heap.size() << " nodes.";
 
-// 	med_heap.erase("Adam-West");
-// 	ASSERT_EQ(med_heap.size(), 4) <<
-// 		"med_heap tried to delete 1 node from 5, expecting 4, "
-// 		"but there remained " <<
-// 		med_heap.size() << " nodes.";
+	med_heap.erase("Adam-West");
+	ASSERT_EQ(med_heap.size(), 4) <<
+		"med_heap tried to delete 1 node from 5, expecting 4, "
+		"but there remained " <<
+		med_heap.size() << " nodes.";
 
-// 	med_heap.erase("Hilnold-Trumpton");
-// 	ASSERT_EQ(med_heap.size(), 3) <<
-// 		"med_heap tried to delete 1 node from 4, expecting 3, "
-// 		"but there remained " <<
-// 		med_heap.size() << " nodes.";
+	med_heap.erase("Hilnold-Trumpton");
+	ASSERT_EQ(med_heap.size(), 3) <<
+		"med_heap tried to delete 1 node from 4, expecting 3, "
+		"but there remained " <<
+		med_heap.size() << " nodes.";
 
-// 	med_heap.erase("Charlie-bitmyfinger-Unicorn");
-// 	ASSERT_EQ(med_heap.size(), 2) <<
-// 		"med_heap tried to delete 1 node from 3, expecting 2, "
-// 		"but there remained " <<
-// 		med_heap.size() << " nodes.";
+	med_heap.erase("Charlie-bitmyfinger-Unicorn");
+	ASSERT_EQ(med_heap.size(), 2) <<
+		"med_heap tried to delete 1 node from 3, expecting 2, "
+		"but there remained " <<
+		med_heap.size() << " nodes.";
 
-// 	med_heap.erase("Christina-Mitchens");
-// 	ASSERT_EQ(med_heap.size(), 1) <<
-// 		"med_heap tried to delete 1 node from 2, expecting 1, "
-// 		"but there remained " <<
-// 		med_heap.size() << " nodes.";
+	med_heap.erase("Christina-Mitchens");
+	ASSERT_EQ(med_heap.size(), 1) <<
+		"med_heap tried to delete 1 node from 2, expecting 1, "
+		"but there remained " <<
+		med_heap.size() << " nodes.";
 
-// 	med_heap.erase("Hillary-Clinton");
-// 	ASSERT_EQ(med_heap.size(), 0) <<
-// 		"med_heap tried to delete 1 node from 1, expecting 0, "
-// 		"but there remained " <<
-// 		med_heap.size() << " nodes.";
-// }
+	med_heap.erase("Hillary-Clinton");
+	ASSERT_EQ(med_heap.size(), 0) <<
+		"med_heap tried to delete 1 node from 1, expecting 0, "
+		"but there remained " <<
+		med_heap.size() << " nodes.";
+}
 
 // TEST(MedHeapMapTest, DecreaseKeyWorks) {
 // 	MedHeapMap med_heap;
