@@ -8,3 +8,6 @@ insight_testsuite/temp
 *.o
 *.a
 rolling_median
+test_med_heap_map
+test_venmo_graph
+test_med_deg_stream

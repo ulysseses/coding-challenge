@@ -5,3 +5,6 @@ rolling_median :
 
 test :
 	cd insight_testsuite && $(MAKE)
+
+clean :
+	rm -f rolling_median
