@@ -11,9 +11,9 @@ static time_t create_time(char const* datetime) {
 		   &time_obj.tm_hour, &time_obj.tm_min, &time_obj.tm_sec);
 	// tm_year -= 1900
 	// tm_mon--
-	dt.tm_year -= 1900;
-	--dt.tm_mon;
-	return mktime(&dt);
+	time_obj.tm_year -= 1900;
+	--time_obj.tm_mon;
+	return mktime(&time_obj);
 }
 
 TEST(VenmoGraphTest, VenmoGraphWorks) {

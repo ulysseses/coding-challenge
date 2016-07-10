@@ -2,7 +2,7 @@ GTEST_DIR = googletest
 
 CPPFLAGS += -isystem $(GTEST_DIR)/include
 
-CXXFLAGS += -g -Wall -Wextra -pthread
+CXXFLAGS += -std=c++11 -g -Wall -Wextra -pthread
 
 TESTS = test_med_heap_map test_venmo_graph test_med_deg_stream
 

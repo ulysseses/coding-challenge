@@ -204,11 +204,11 @@ TEST(MedHeapMapTest, DecreaseKeyWorks) {
 	ASSERT_FALSE(med_heap.contains("Christina-Mitchens")) <<
 		"Erased edge between Christina-Mitchens and Hillary-Clinton, "
 		"and this was the only edge Christina-Mitchens was connected to "
-		"but was still not erased."
+		"but was still not erased.";
 	ASSERT_FALSE(med_heap.contains("Hillary-Clinton")) <<
 		"Erased edge between Christina-Mitchens and Hillary-Clinton, "
 		"and this was the only edge Hillary-Clinton was connected to "
-		"but was still not erased."
+		"but was still not erased.";
 
 	med_heap.decrease_key("Benjamin-Button");
 	med_heap.decrease_key("Hilnold-Trumpton");
@@ -226,11 +226,11 @@ TEST(MedHeapMapTest, DecreaseKeyWorks) {
 	ASSERT_FALSE(med_heap.contains("Hilnold-Trumpton")) <<
 		"Erased edge between Hilnold-Trumpton and Shaggy, "
 		"and this was the only edge Hilnold-Trumpton was connected to "
-		"but was still not erased."
+		"but was still not erased.";
 	ASSERT_FALSE(med_heap.contains("Shaggy")) <<
 		"Erased edge between Hilnold-Trumpton and Shaggy, "
 		"and this was the only edge Shaggy was connected to "
-		"but was still not erased."
+		"but was still not erased.";
 
 	med_heap.decrease_key("Adam-West");
 	med_heap.decrease_key("Benjamin-Button");
