@@ -5,6 +5,7 @@
 #include "json/json.hpp"
 #include <stdio.h>
 #include <fstream>
+#include <string>
 
 #include <iostream>
 using std::cout;
@@ -50,7 +51,7 @@ public:
 			} else {
 				actor = *it_actor;
 				if (actor.empty()) {
-					cout << "bad actor" << endl;
+					cout << "empty actor" << endl;
 					continue;
 				}
 			}
@@ -63,7 +64,7 @@ public:
 			} else {
 				target = *it_target;
 				if (target.empty()) {
-					cout << "bad target" << endl;
+					cout << "empty target" << endl;
 					continue;
 				}
 			}
@@ -76,7 +77,7 @@ public:
 			} else {
 				time_str = *it_created_time;
 				if (time_str.empty()) {
-					cout << "bad created_time" << endl;
+					cout << "empty created_time" << endl;
 					continue;
 				}
 			}
@@ -102,7 +103,6 @@ public:
 		}
 		_ofs.flush();
 	}
-
 };
 
 

@@ -199,7 +199,7 @@ private:
 			++(_lh[i]);
 			up_helper(i, false);
 			if (_lh.front() > _gh.front()) {
-				ssize_t const size_diff = ssize_t(_lh.size()) - 
+				ssize_t const size_diff = ssize_t(_lh.size()) -
 										  ssize_t(_gh.size());
 				if (size_diff == 0) {
 					rotate(true);
@@ -337,16 +337,13 @@ public:
 		ssize_t const size_diff = ssize_t(_lh.size()) -
 								  ssize_t(_gh.size());
 
-		// _lh.size() > _gh.size()
-		if (size_diff > 0) {
+		if (size_diff > 0) {  // _lh.size() > _gh.size()
 			return _lh.front();
 		}
-		// _lh.size() == _gh.size()
-		else if (size_diff == 0) {
+		else if (size_diff == 0) {  // _lh.size() == _gh.size()
 			return (_lh.front() + _gh.front()) / 2.0;
 		}
-		// _lh.size() < _gh.size()
-		else {
+		else {  // _lh.size() < _gh.size()
 			return _gh.front();
 		}
 	}
@@ -370,7 +367,7 @@ public:
 	/* Testing & Debugging */
 
 	uint64_t degree(std::string name) const {
-		std::unordered_map<std::string, FInfo>::const_iterator found = 
+		std::unordered_map<std::string, FInfo>::const_iterator found =
 			_fmap.find(name);
 		if ((found->second).in_gh) {
 			return _gh[(found->second).ind];
@@ -380,7 +377,7 @@ public:
 	}
 
 	bool in_gh(std::string name) const {
-		std::unordered_map<std::string, FInfo>::const_iterator found = 
+		std::unordered_map<std::string, FInfo>::const_iterator found =
 			_fmap.find(name);
 		return (found->second).in_gh;
 	}

@@ -2,9 +2,9 @@
 #define VENMO_GRAPH_HPP_
 
 #include "victor/med_heap_map.hpp"
+#include <time.h>
 #include <map>
 #include <unordered_map>
-#include <time.h>
 #include <utility>
 #include <string>
 #include <sstream>
@@ -73,8 +73,7 @@ private:
 			_vertices.process_edge(actor, target);
 			_neighbors[*name1_ptr][*name2_ptr] = created_time;
 			_edges.emplace(created_time,
-				std::make_pair<std::string, std::string>(
-				std::move(*name1_ptr), std::move(*name2_ptr)));
+				std::make_pair(std::move(*name1_ptr), std::move(*name2_ptr)));
 		} else {
 			// Old edge encountered -> don't insert, just update its time.
 			time_t& time_ref = it2->second;
@@ -89,8 +88,7 @@ private:
 			}
 			_edges.erase(it3);
 			_edges.emplace(created_time,
-				std::make_pair<std::string, std::string>(
-				std::move(*name1_ptr), std::move(*name2_ptr)));
+				std::make_pair(std::move(*name1_ptr), std::move(*name2_ptr)));
 		}
 	}
 

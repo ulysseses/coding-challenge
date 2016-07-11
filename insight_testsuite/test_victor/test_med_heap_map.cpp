@@ -1,8 +1,8 @@
 #include "victor/med_heap_map.hpp"
 #include "gtest/gtest.h"
 #include <math.h>
-#include <iostream>
 
+#include <iostream>
 using std::cout;
 using std::endl;
 
@@ -257,11 +257,11 @@ TEST(MedHeapMapTest, MedianWorks) {
 	MedHeapMap med_heap;
 	med_heap.insert("A");
 	med_heap.insert("B");
-	ASSERT_EQ(int(med_heap.median()), 1);
+	ASSERT_EQ(static_cast<int>(med_heap.median()), 1);
 
 	med_heap.insert("C");
 	med_heap.insert("D");
-	ASSERT_EQ(int(med_heap.median()), 1);
+	ASSERT_EQ(static_cast<int>(med_heap.median()), 1);
 
 	med_heap.increase_key("B");
 	// cout << "BEFORE-----------------------------------------------------------\n";
@@ -269,25 +269,25 @@ TEST(MedHeapMapTest, MedianWorks) {
 	med_heap.insert("E");
 	// cout << "AFTER------------------------------------------------------------\n";
 	// cout << med_heap.dump() << endl;
-	ASSERT_EQ(int(med_heap.median()), 1);
+	ASSERT_EQ(static_cast<int>(med_heap.median()), 1);
 
 	med_heap.increase_key("A");
 	med_heap.increase_key("C");
-	ASSERT_EQ(int(med_heap.median()), 2);
+	ASSERT_EQ(static_cast<int>(med_heap.median()), 2);
 
 	med_heap.increase_key("A");
 	med_heap.increase_key("E");
-	ASSERT_EQ(int(med_heap.median()), 2);
+	ASSERT_EQ(static_cast<int>(med_heap.median()), 2);
 
 	med_heap.decrease_key("A");
 	med_heap.decrease_key("B");
-	ASSERT_EQ(int(med_heap.median()), 2);	
+	ASSERT_EQ(static_cast<int>(med_heap.median()), 2);	
 
 	med_heap.decrease_key("A");
 	med_heap.decrease_key("E");
-	ASSERT_EQ(int(med_heap.median()), 1);
+	ASSERT_EQ(static_cast<int>(med_heap.median()), 1);
 
 	med_heap.decrease_key("A");
 	med_heap.decrease_key("C");
-	ASSERT_EQ(int(med_heap.median()), 1);
+	ASSERT_EQ(static_cast<int>(med_heap.median()), 1);
 }
