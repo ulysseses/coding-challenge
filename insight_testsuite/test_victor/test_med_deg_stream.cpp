@@ -3,8 +3,8 @@
 
 
 TEST(MedDegStreamTest, ProcessWorks) {
-	char const* in_filename = "";  // fill here
-	char const* out_filename = "";  // fill here
+	char const* in_filename = "../venmo_input/venmo-trans.txt";  // fill here
+	char const* out_filename = "../venmo_output/victor_out.txt";  // fill here
 	MedDegStream mds(in_filename, out_filename);
 	mds.process();
 }

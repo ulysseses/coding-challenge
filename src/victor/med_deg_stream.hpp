@@ -6,6 +6,10 @@
 #include <stdio.h>
 #include <fstream>
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 
 using json = nlohmann::json;  // for convenience
 
@@ -30,17 +34,23 @@ public:
 		json::const_iterator it_created_time;
 		json::const_iterator end;
 		tm dt;
-		while (_ifs >> j) {
+		
+		std::string line;
+		while (std::getline(_ifs, line)) {
+			j = json::parse(line);
+			
 			// skip a line if it has any malformed or missing
 			// field
 			end = j.cend();
 			it_actor = j.find("actor");
 			std::string actor;
 			if (it_actor == end) {
+				cout << "missing actor" << endl;
 				continue;
 			} else {
 				actor = *it_actor;
 				if (actor.empty()) {
+					cout << "bad actor" << endl;
 					continue;
 				}
 			}
@@ -48,10 +58,12 @@ public:
 			it_target = j.find("target");
 			std::string target;
 			if (it_target == end) {
+				cout << "missing target" << endl;
 				continue;
 			} else {
 				target = *it_target;
 				if (target.empty()) {
+					cout << "bad target" << endl;
 					continue;
 				}
 			}
@@ -59,10 +71,12 @@ public:
 			it_created_time = j.find("created_time");
 			std::string time_str;
 			if (it_created_time == end) {
+				cout << "missing created_time" << endl;
 				continue;
 			} else {
 				time_str = *it_created_time;
 				if (time_str.empty()) {
+					cout << "bad created_time" << endl;
 					continue;
 				}
 			}
@@ -72,15 +86,15 @@ public:
 				&dt.tm_min, &dt.tm_sec);
 
 			if (num_matched != 6) {
+				cout << "bad created_time 2" << endl;
 				continue;
 			}
-
 			// tm_year -= 1900
 			// tm_mon--
 			dt.tm_year -= 1900;
 			--dt.tm_mon;
 			time_t created_time = mktime(&dt);
-
+			
 			double current_median = _graph.extract_median(std::move(actor),
 				std::move(target),
 				created_time);

@@ -4,20 +4,21 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <sstream>
 
 // #include <iostream>
 // using std::cout;
 // using std::endl;
-#include <sstream>
+
 
 // ANC, abbreviation of ANCESTOR for binary heaps
 #define ANC(i) ((i - 1) >> 1)
 
 // DES1, abbreviation of DESCENDENT1 for binary heaps
-#define DES1(i) ((i >> 1) + 1)
+#define DES1(i) ((i << 1) + 1)
 
 // DES2, abbreviation of DESCENDENT2 for binary heaps
-#define DES2(i) ((i >> 1) + 2)
+#define DES2(i) ((i << 1) + 2)
 
 
 class MedHeapMap {
@@ -114,35 +115,6 @@ private:
 		return;  // never reached
 	}
 
-	void erase(size_t i, bool in_gh) {
-		if (in_gh) {
-			swap_nodes(i, _gh.size() - 1, true);
-			_gh.pop_back();
-			std::unordered_map<size_t, BInfo>::iterator it =
-				_bmap.find(_gh.size());
-			std::string name = std::move((it->second).g_key);
-			_fmap.erase(std::move(name));
-			if ((it->second).l_key.empty()) {
-				_bmap.erase(it);
-			}
-			down_helper(i, true);
-		} else {
-			swap_nodes(i, _lh.size() - 1, false);
-			_lh.pop_back();
-			std::unordered_map<size_t, BInfo>::iterator it =
-				_bmap.find(_lh.size());
-			std::string name = std::move((it->second).l_key);
-			_fmap.erase(std::move(name));
-			if ((it->second).g_key.empty()) {
-				_bmap.erase(it);
-			}
-			down_helper(i, false);
-		}
-
-		// re-balance heaps if needed to maintain median heap structure
-		rebalance();
-	}
-
 	void rotate(bool into_gh) {
 		// Pop the top of one heap and push it into the other heap.
 		// Manage the maps accordingly.
@@ -187,46 +159,77 @@ private:
 		}
 	}
 
-	void rebalance() {
-		// If size differs by 2, transfer the top of one heap
-		// into the other heap.
-		ssize_t const size_diff = _lh.size() - _gh.size();
-		if (size_diff >= 2) {
-			rotate(true);
-		} else if (size_diff <= -2) {
-			rotate(false);
+	void erase(size_t i, bool in_gh) {
+		if (in_gh) {
+			swap_nodes(i, _gh.size() - 1, true);
+			_gh.pop_back();
+			std::unordered_map<size_t, BInfo>::iterator it =
+				_bmap.find(_gh.size());
+			std::string name = std::move((it->second).g_key);
+			_fmap.erase(std::move(name));
+			if ((it->second).l_key.empty()) {
+				_bmap.erase(it);
+			}
+			down_helper(i, true);
+			if (_lh.size() == _gh.size() + 2) {
+				rotate(true);
+			}
+		} else {
+			swap_nodes(i, _lh.size() - 1, false);
+			_lh.pop_back();
+			std::unordered_map<size_t, BInfo>::iterator it =
+				_bmap.find(_lh.size());
+			std::string name = std::move((it->second).l_key);
+			_fmap.erase(std::move(name));
+			if ((it->second).g_key.empty()) {
+				_bmap.erase(it);
+			}
+			down_helper(i, false);
+			if (_gh.size() == _lh.size() + 2) {
+				rotate(false);
+			}
 		}
 	}
 
 	void increase_key(size_t i, bool in_gh) {
-		// If key in gh, increment it and down_helper.
-		// If key in lh, increment it and up_helper.
 		if (in_gh) {
 			++(_gh[i]);
 			down_helper(i, true);
 		} else {
 			++(_lh[i]);
 			up_helper(i, false);
-			// If lh.top() > gh.top(), rotate lh into gh.
-			// Re-balance if necessary.
 			if (_lh.front() > _gh.front()) {
-				rotate(true);
-				rebalance();
+				ssize_t const size_diff = ssize_t(_lh.size()) - 
+										  ssize_t(_gh.size());
+				if (size_diff == 0) {
+					rotate(true);
+					rotate(false);
+				} else if (size_diff == 1) {
+					rotate(true);
+				} else {  // size_diff == -1
+					rotate(false);
+					rotate(true);
+				}
 			}
 		}
 	}
 
 	void decrease_key(size_t i, bool in_gh) {
-		// If key in lh, decrement it and down_helper.
-		// If key in gh, decrement it and up_helper.
 		if (in_gh) {
 			--(_gh[i]);
 			up_helper(i, true);
-			// If gh.top() < lh.top(), rotate gh into lh.
-			// Re-balance if necessary.
-			if (_gh.front() < _lh.front()) {
-				rotate(false);
-				rebalance();
+			if (_lh.front() > _gh.front()) {
+				ssize_t const size_diff = ssize_t(_lh.size()) -
+										  ssize_t(_gh.size());
+				if (size_diff == 0) {
+					rotate(false);
+					rotate(true);
+				} else if (size_diff == -1) {
+					rotate(false);
+				} else {  // size_diff == 1
+					rotate(true);
+					rotate(false);
+				}
 			}
 		} else {
 			--(_lh[i]);
@@ -250,15 +253,23 @@ public:
 		}
 
 		// insert into either the lessor or greater half
-		// Always insert into the greater half.
-		// Let rebalance() handle the shuffling from gh to lh.
-		_gh.emplace_back(1);
-		_fmap[name] = { _gh.size() - 1, true };
-		_bmap[_gh.size() - 1].g_key = std::move(name);
-		up_helper(_gh.size() - 1, true);
-
-		// re-balance heaps if needed to maintain median heap structure
-		rebalance();
+		if (1 < _lh.front()) {
+			_lh.emplace_back(1);
+			_fmap[name] = { _lh.size() - 1, false };
+			_bmap[_lh.size() - 1].l_key = std::move(name);
+			up_helper(_lh.size() - 1, false);
+			if (_lh.size() == _gh.size() + 2) {
+				rotate(true);
+			}
+		} else {
+			_gh.emplace_back(1);
+			_fmap[name] = { _gh.size() - 1, true };
+			_bmap[_gh.size() - 1].g_key = std::move(name);
+			up_helper(_gh.size() - 1, true);
+			if (_gh.size() == _lh.size() + 2) {
+				rotate(false);
+			}
+		}
 	}
 
 	void erase(std::string const& name) {
@@ -323,12 +334,8 @@ public:
 	}
 
 	double median() const {
-		if (empty()) {
-			// raise error
-		}
-
-		ssize_t const size_diff = _lh.size() - _gh.size();
-		// assert(int(abs(size_diff)) < 2);
+		ssize_t const size_diff = ssize_t(_lh.size()) -
+								  ssize_t(_gh.size());
 
 		// _lh.size() > _gh.size()
 		if (size_diff > 0) {
@@ -344,7 +351,6 @@ public:
 		}
 	}
 
-	/* Testing & Debugging */
 	bool empty() const {
 		return size() == 0;
 	}
@@ -360,6 +366,8 @@ public:
 	size_t size_gh() const {
 		return _gh.size();
 	}
+
+	/* Testing & Debugging */
 
 	uint64_t degree(std::string name) const {
 		std::unordered_map<std::string, FInfo>::const_iterator found = 
