@@ -380,6 +380,32 @@ public:
 
 	std::string dump() const {
 		std::stringstream ss;
+		
+		// dump lh
+		ss << "----- _lh -----\n";
+		for (size_t i = 0; i < _lh.size(); ++i) {
+			std::unordered_map<size_t, BInfo>::const_iterator const it =
+				_bmap.find(i);
+			std::string const name = (it->second).l_key;
+			ss << i << ": " << name << ", " << _lh[i] << '\n';
+		}
+		ss << '\n';
+		
+		// dump gh
+		ss << "----- _gh -----\n";
+		for (size_t i = 0; i < _gh.size(); ++i) {
+			std::unordered_map<size_t, BInfo>::const_iterator const it =
+				_bmap.find(i);
+			std::string const name = (it->second).g_key;
+			ss << i << ": " << name << ", " << _gh[i] << '\n';
+		}
+		ss << '\n';
+		
+		return ss.str();
+	}
+
+	std::string dump2() const {
+		std::stringstream ss;
 
 		// dump _lh
 		ss << "----- _lh -----\n";
@@ -416,32 +442,6 @@ public:
 			}
 		}
 
-		return ss.str();
-	}
-	
-	std::string dump2() const {
-		std::stringstream ss;
-		
-		// dump lh
-		ss << "----- _lh -----\n";
-		for (size_t i = 0; i < _lh.size(); ++i) {
-			std::unordered_map<size_t, BInfo>::const_iterator const it =
-				_bmap.find(i);
-			std::string const name = (it->second).l_key;
-			ss << i << ": " << name << ", " << _lh[i] << '\n';
-		}
-		ss << '\n';
-		
-		// dump gh
-		ss << "----- _gh -----\n";
-		for (size_t i = 0; i < _gh.size(); ++i) {
-			std::unordered_map<size_t, BInfo>::const_iterator const it =
-				_bmap.find(i);
-			std::string const name = (it->second).g_key;
-			ss << i << ": " << name << ", " << _gh[i] << '\n';
-		}
-		ss << '\n';
-		
 		return ss.str();
 	}
 };

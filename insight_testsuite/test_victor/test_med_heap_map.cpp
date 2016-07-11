@@ -193,11 +193,7 @@ TEST(MedHeapMapTest, DecreaseKeyWorks) {
 	med_heap.increase_key("Adam-West");
 	med_heap.insert("Benjamin-Button");
 
-	// cout << "BEFORE-----------------------------------------------------------\n";
-	// cout << med_heap.dump2() << endl;
 	med_heap.increase_key("Professor-Oak");
-	// cout << "AFTER------------------------------------------------------------\n";
-	// cout << med_heap.dump2() << endl;
 	med_heap.increase_key("Benjamin-Button");
 
 	med_heap.increase_key("Professor-Oak");
@@ -257,43 +253,41 @@ TEST(MedHeapMapTest, DecreaseKeyWorks) {
 		"A node with degree 1 was not deleted when its key was decreased.";
 }
 
-// TEST(MedHeapMapTest, MedianWorks) {
-// 	MedHeapMap med_heap;
-// 	med_heap.insert("A");
-// 	med_heap.insert("B");
-// 	ASSERT_EQ(int(med_heap.median()), 1);
+TEST(MedHeapMapTest, MedianWorks) {
+	MedHeapMap med_heap;
+	med_heap.insert("A");
+	med_heap.insert("B");
+	ASSERT_EQ(int(med_heap.median()), 1);
 
-// 	med_heap.insert("C");
-// 	med_heap.insert("D");
-// 	ASSERT_EQ(int(med_heap.median()), 1);
+	med_heap.insert("C");
+	med_heap.insert("D");
+	ASSERT_EQ(int(med_heap.median()), 1);
 
-// 	med_heap.increase_key("B");
-// 	cout << "BEFORE-----------------------------------------------------------\n";
-// 	cout << med_heap.dump() << endl;
-// 	cout << med_heap.dump2() << endl;
-// 	med_heap.insert("E");
-// 	cout << "AFTER------------------------------------------------------------\n";
-// 	cout << med_heap.dump() << endl;
-// 	cout << med_heap.dump2() << endl;
-// 	ASSERT_EQ(int(med_heap.median()), 1);
+	med_heap.increase_key("B");
+	// cout << "BEFORE-----------------------------------------------------------\n";
+	// cout << med_heap.dump() << endl;
+	med_heap.insert("E");
+	// cout << "AFTER------------------------------------------------------------\n";
+	// cout << med_heap.dump() << endl;
+	ASSERT_EQ(int(med_heap.median()), 1);
 
-// 	med_heap.increase_key("A");
-// 	med_heap.increase_key("C");
-// 	ASSERT_EQ(int(med_heap.median()), 2);
+	med_heap.increase_key("A");
+	med_heap.increase_key("C");
+	ASSERT_EQ(int(med_heap.median()), 2);
 
-// 	med_heap.increase_key("A");
-// 	med_heap.increase_key("E");
-// 	ASSERT_EQ(int(med_heap.median()), 2);
+	med_heap.increase_key("A");
+	med_heap.increase_key("E");
+	ASSERT_EQ(int(med_heap.median()), 2);
 
-// 	med_heap.decrease_key("A");
-// 	med_heap.decrease_key("B");
-// 	ASSERT_EQ(int(med_heap.median()), 2);	
+	med_heap.decrease_key("A");
+	med_heap.decrease_key("B");
+	ASSERT_EQ(int(med_heap.median()), 2);	
 
-// 	med_heap.decrease_key("A");
-// 	med_heap.decrease_key("E");
-// 	ASSERT_EQ(int(med_heap.median()), 1);
+	med_heap.decrease_key("A");
+	med_heap.decrease_key("E");
+	ASSERT_EQ(int(med_heap.median()), 1);
 
-// 	med_heap.decrease_key("A");
-// 	med_heap.decrease_key("C");
-// 	ASSERT_EQ(int(med_heap.median()), 1);
-// }
+	med_heap.decrease_key("A");
+	med_heap.decrease_key("C");
+	ASSERT_EQ(int(med_heap.median()), 1);
+}
