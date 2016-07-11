@@ -104,7 +104,6 @@ TEST(MedHeapMapTest, IncreaseKeyWorks) {
 	med_heap.insert("Hillary-Clinton");
 
 	old_size = med_heap.size();
-	cout << "before increasing adam west: " << med_heap.degree("Adam-West") << endl;
 	med_heap.increase_key("Adam-West");
 	ASSERT_EQ(med_heap.degree("Adam-West"), 3);
 	ASSERT_LT(size_t(abs(med_heap.size_lh() - med_heap.size_gh())), 2) <<
@@ -183,73 +182,80 @@ TEST(MedHeapMapTest, EraseWorks) {
 		med_heap.size() << " nodes.";
 }
 
-// TEST(MedHeapMapTest, DecreaseKeyWorks) {
-// 	MedHeapMap med_heap;
-// 	med_heap.insert("Adam-West");
-// 	med_heap.insert("Professor-Oak");
+TEST(MedHeapMapTest, DecreaseKeyWorks) {
+	MedHeapMap med_heap;
+	med_heap.insert("Adam-West");
+	med_heap.insert("Professor-Oak");
+	
+	med_heap.insert("Christina-Mitchens");
+	med_heap.insert("Hillary-Clinton");
 
-// 	med_heap.insert("Christina-Mitchens");
-// 	med_heap.insert("Hillary-Clinton");
+	med_heap.increase_key("Adam-West");
+	med_heap.insert("Benjamin-Button");
 
-// 	med_heap.increase_key("Adam-West");
-// 	med_heap.insert("Benjamin-Button");
+	// cout << "BEFORE-----------------------------------------------------------\n";
+	// cout << med_heap.dump2() << endl;
+	med_heap.increase_key("Professor-Oak");
+	// cout << "AFTER------------------------------------------------------------\n";
+	// cout << med_heap.dump2() << endl;
+	med_heap.increase_key("Benjamin-Button");
 
-// 	med_heap.increase_key("Professor-Oak");
-// 	med_heap.increase_key("Benjamin-Button");
+	med_heap.increase_key("Professor-Oak");
+	med_heap.insert("Charlie-bitmyfinger-Unicorn");
 
-// 	med_heap.increase_key("Professor-Oak");
-// 	med_heap.insert("Charlie-bitmyfinger-Unicorn");
+	med_heap.insert("Hilnold-Trumpton");
+	med_heap.insert("Shaggy");
 
-// 	med_heap.insert("Hilnold-Trumpton");
-// 	med_heap.insert("Shaggy");
+	med_heap.increase_key("Benjamin-Button");
+	med_heap.increase_key("Hilnold-Trumpton");
 
-// 	med_heap.increase_key("Benjamin-Button");
-// 	med_heap.increase_key("Hilnold-Trumpton");
+	med_heap.decrease_key("Christina-Mitchens");
+	med_heap.decrease_key("Hillary-Clinton");
+	ASSERT_FALSE(med_heap.contains("Christina-Mitchens")) <<
+		"Erased edge between Christina-Mitchens and Hillary-Clinton, "
+		"and this was the only edge Christina-Mitchens was connected to "
+		"but was still not erased.";
+	ASSERT_FALSE(med_heap.contains("Hillary-Clinton")) <<
+		"Erased edge between Christina-Mitchens and Hillary-Clinton, "
+		"and this was the only edge Hillary-Clinton was connected to "
+		"but was still not erased.";
 
-// 	med_heap.decrease_key("Christina-Mitchens");
-// 	med_heap.decrease_key("Hillary-Clinton");
-// 	ASSERT_FALSE(med_heap.contains("Christina-Mitchens")) <<
-// 		"Erased edge between Christina-Mitchens and Hillary-Clinton, "
-// 		"and this was the only edge Christina-Mitchens was connected to "
-// 		"but was still not erased.";
-// 	ASSERT_FALSE(med_heap.contains("Hillary-Clinton")) <<
-// 		"Erased edge between Christina-Mitchens and Hillary-Clinton, "
-// 		"and this was the only edge Hillary-Clinton was connected to "
-// 		"but was still not erased.";
+	med_heap.decrease_key("Benjamin-Button");
+	med_heap.decrease_key("Hilnold-Trumpton");
+	ASSERT_TRUE(med_heap.contains("Benjamin-Button")) <<
+		"Erased edge between Benjamin-Button and Hilnold-Trumpton, "
+		"but Benjamin-Button still had other edges and "
+		"ended up being erased.";
+	ASSERT_TRUE(med_heap.contains("Hilnold-Trumpton")) <<
+		"Erased edge between Benjamin-Button and Hilnold-Trumpton, "
+		"but Hilnold-Trumpton still had other edges and "
+		"ended up being erased.";
+	
+	med_heap.decrease_key("Hilnold-Trumpton");
+	med_heap.decrease_key("Shaggy");
+	ASSERT_FALSE(med_heap.contains("Hilnold-Trumpton")) <<
+		"Erased edge between Hilnold-Trumpton and Shaggy, "
+		"and this was the only edge Hilnold-Trumpton was connected to "
+		"but was still not erased.";
+	ASSERT_FALSE(med_heap.contains("Shaggy")) <<
+		"Erased edge between Hilnold-Trumpton and Shaggy, "
+		"and this was the only edge Shaggy was connected to "
+		"but was still not erased.";
 
-// 	med_heap.decrease_key("Benjamin-Button");
-// 	med_heap.decrease_key("Hilnold-Trumpton");
-// 	ASSERT_TRUE(med_heap.contains("Benjamin-Button")) <<
-// 		"Erased edge between Benjamin-Button and Hilnold-Trumpton, "
-// 		"but Benjamin-Button still had other edges and "
-// 		"ended up being erased.";
-// 	ASSERT_TRUE(med_heap.contains("Hilnold-Trumpton")) <<
-// 		"Erased edge between Benjamin-Button and Hilnold-Trumpton, "
-// 		"but Hilnold-Trumpton still had other edges and "
-// 		"ended up being erased.";
-
-// 	med_heap.decrease_key("Hilnold-Trumpton");
-// 	med_heap.decrease_key("Shaggy");
-// 	ASSERT_FALSE(med_heap.contains("Hilnold-Trumpton")) <<
-// 		"Erased edge between Hilnold-Trumpton and Shaggy, "
-// 		"and this was the only edge Hilnold-Trumpton was connected to "
-// 		"but was still not erased.";
-// 	ASSERT_FALSE(med_heap.contains("Shaggy")) <<
-// 		"Erased edge between Hilnold-Trumpton and Shaggy, "
-// 		"and this was the only edge Shaggy was connected to "
-// 		"but was still not erased.";
-
-// 	med_heap.decrease_key("Adam-West");
-// 	med_heap.decrease_key("Benjamin-Button");
-// 	ASSERT_EQ(med_heap.degree("Professor-Oak"), 2) <<
-// 		"Deletion of edge between Adam-West and Benjamin-Button shouldn't "
-// 		"affect degree of Professor-Oak. It should have degree 3 "
-// 		"but instead has degree " << med_heap.degree("Professor-Oak") << '.';
-
-// 	med_heap.decrease_key("Charlie-bitmyfinger-Unicorn");
-// 	ASSERT_FALSE(med_heap.contains("Charlie-bitmyfinger-Unicorn")) <<
-// 		"A node with degree 1 was not deleted when its key was decreased.";
-// }
+	med_heap.decrease_key("Adam-West");
+	med_heap.decrease_key("Benjamin-Button");
+	ASSERT_EQ(med_heap.degree("Professor-Oak"), 3) <<
+		"Deletion of edge between Adam-West and Benjamin-Button shouldn't "
+		"affect degree of Professor-Oak. It should have degree 3 "
+		"but instead has degree " << med_heap.degree("Professor-Oak") << '.';
+	
+	EXPECT_EQ(med_heap.size(), 4);
+	EXPECT_EQ(med_heap.degree("Professor-Oak"), 3);
+	
+	med_heap.decrease_key("Charlie-bitmyfinger-Unicorn");
+	ASSERT_FALSE(med_heap.contains("Charlie-bitmyfinger-Unicorn")) <<
+		"A node with degree 1 was not deleted when its key was decreased.";
+}
 
 // TEST(MedHeapMapTest, MedianWorks) {
 // 	MedHeapMap med_heap;
@@ -262,7 +268,13 @@ TEST(MedHeapMapTest, EraseWorks) {
 // 	ASSERT_EQ(int(med_heap.median()), 1);
 
 // 	med_heap.increase_key("B");
+// 	cout << "BEFORE-----------------------------------------------------------\n";
+// 	cout << med_heap.dump() << endl;
+// 	cout << med_heap.dump2() << endl;
 // 	med_heap.insert("E");
+// 	cout << "AFTER------------------------------------------------------------\n";
+// 	cout << med_heap.dump() << endl;
+// 	cout << med_heap.dump2() << endl;
 // 	ASSERT_EQ(int(med_heap.median()), 1);
 
 // 	med_heap.increase_key("A");

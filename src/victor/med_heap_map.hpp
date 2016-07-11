@@ -114,104 +114,135 @@ private:
 		return;  // never reached
 	}
 
-	void heap_erase(size_t i, bool in_gh) {
-		std::vector<uint32_t>& vec = in_gh ? _gh : _lh;
-		size_t j = vec.size() - 1;
-		swap_nodes(i, j, in_gh);
-		vec.pop_back();
+	void erase(size_t i, bool in_gh) {
+		if (in_gh) {
+			swap_nodes(i, _gh.size() - 1, true);
+			_gh.pop_back();
+			std::unordered_map<size_t, BInfo>::iterator it =
+				_bmap.find(_gh.size());
+			std::string name = std::move((it->second).g_key);
+			_fmap.erase(std::move(name));
+			if ((it->second).l_key.empty()) {
+				_bmap.erase(it);
+			}
+			down_helper(i, true);
+		} else {
+			swap_nodes(i, _lh.size() - 1, false);
+			_lh.pop_back();
+			std::unordered_map<size_t, BInfo>::iterator it =
+				_bmap.find(_lh.size());
+			std::string name = std::move((it->second).l_key);
+			_fmap.erase(std::move(name));
+			if ((it->second).g_key.empty()) {
+				_bmap.erase(it);
+			}
+			down_helper(i, false);
+		}
 
-		down_helper(i, in_gh);
+		// re-balance heaps if needed to maintain median heap structure
+		rebalance();
 	}
 
-	void map_erase(bool in_gh) {
-		// If called, must be called immediately after heap_erase
-		if (in_gh) {
-			size_t i = _gh.size();
-			BInfo& info = _bmap[i];
-			_fmap.erase(info.g_key);
-			if (info.l_key.empty()) {
-				_bmap.erase(i);
-			} else {
-				info.g_key = "";
+	void rotate(bool into_gh) {
+		// Pop the top of one heap and push it into the other heap.
+		// Manage the maps accordingly.
+		if (into_gh) {
+			uint32_t degree = _lh.front();
+			swap_nodes(0, _lh.size() - 1, false);
+			_lh.pop_back();
+			_gh.emplace_back(degree);
+
+			std::unordered_map<size_t, BInfo>::iterator it =
+				_bmap.find(_lh.size());
+			std::string name = std::move((it->second).l_key);
+			FInfo& info = _fmap[name];
+			info.ind = _gh.size() - 1;
+			info.in_gh = true;
+			_bmap[_gh.size() - 1].g_key = std::move(name);
+			if ((it->second).g_key.empty()) {
+				_bmap.erase(it);
 			}
+
+			down_helper(0, false);
+			up_helper(_gh.size() - 1, true);
 		} else {
-			size_t i = _lh.size();
-			BInfo& info = _bmap[i];
-			_fmap.erase(info.g_key);
-			if (info.g_key.empty()) {
-				_bmap.erase(i);
-			} else {
-				info.l_key = "";
+			uint32_t degree = _gh.front();
+			swap_nodes(0, _gh.size() - 1, true);
+			_gh.pop_back();
+			_lh.emplace_back(degree);
+
+			std::unordered_map<size_t, BInfo>::iterator it =
+				_bmap.find(_gh.size());
+			std::string name = std::move((it->second).g_key);
+			FInfo& info = _fmap[name];
+			info.ind = _lh.size() - 1;
+			info.in_gh = false;
+			_bmap[_lh.size() - 1].l_key = std::move(name);
+			if ((it->second).l_key.empty()) {
+				_bmap.erase(it);
 			}
+
+			down_helper(0, true);
+			up_helper(_lh.size() - 1, false);
 		}
 	}
 
 	void rebalance() {
 		// If size differs by 2, transfer the top of one heap
 		// into the other heap.
-		// Manage the maps accordingly.
 		ssize_t const size_diff = _lh.size() - _gh.size();
-		if (size_diff == 2) {
-			std::string l_key = std::move(_bmap[0].l_key);
-			auto& it = _fmap[l_key];
-			it.ind = _gh.size();
-			it.in_gh = true;
-			_bmap[_gh.size()].g_key = std::move(l_key);
-			if (_bmap[0].g_key.empty()) {
-				_bmap.erase(0);
-			}
-
-			uint32_t degree = _lh.front();
-			heap_erase(0, false);
-			_gh.emplace_back(degree);
-			up_helper(_gh.size() - 1, true);
-		} else if (size_diff == -2) {
-			std::string g_key = std::move(_bmap[0].g_key);
-			auto& it = _fmap[g_key];
-			it.ind = _lh.size();
-			it.in_gh = false;
-			_bmap[_lh.size()].l_key = std::move(g_key);
-			if (_bmap[0].l_key.empty()) {
-				_bmap.erase(0);
-			}
-
-			uint32_t degree = _gh.front();
-			heap_erase(0, true);
-			_lh.emplace_back(degree);
-			up_helper(_lh.size() - 1, false);
-		}
-	}
-
-	void decrease_key(size_t i, bool in_gh) {
-		std::vector<uint32_t>& vec = in_gh ? _gh : _lh;
-		--(vec[i]);
-		if (in_gh) {
-			up_helper(i, true);
-		} else {
-			down_helper(i, false);
+		if (size_diff >= 2) {
+			rotate(true);
+		} else if (size_diff <= -2) {
+			rotate(false);
 		}
 	}
 
 	void increase_key(size_t i, bool in_gh) {
-		std::vector<uint32_t>& vec = in_gh ? _gh : _lh;
-		++(vec[i]);
+		// If key in gh, increment it and down_helper.
+		// If key in lh, increment it and up_helper.
 		if (in_gh) {
+			++(_gh[i]);
 			down_helper(i, true);
 		} else {
+			++(_lh[i]);
 			up_helper(i, false);
+			// If lh.top() > gh.top(), rotate lh into gh.
+			// Re-balance if necessary.
+			if (_lh.front() > _gh.front()) {
+				rotate(true);
+				rebalance();
+			}
+		}
+	}
+
+	void decrease_key(size_t i, bool in_gh) {
+		// If key in lh, decrement it and down_helper.
+		// If key in gh, decrement it and up_helper.
+		if (in_gh) {
+			--(_gh[i]);
+			up_helper(i, true);
+			// If gh.top() < lh.top(), rotate gh into lh.
+			// Re-balance if necessary.
+			if (_gh.front() < _lh.front()) {
+				rotate(false);
+				rebalance();
+			}
+		} else {
+			--(_lh[i]);
+			down_helper(i, false);
 		}
 	}
 
 public:
 	void insert(std::string name) {
-		++_size;
 		// prepare the heaps if they are empty
-		if (_size == 1) {
+		if (empty()) {
 			_gh.emplace_back(1);
 			_fmap[name] = { _gh.size() - 1, true };
 			_bmap[_gh.size() - 1].g_key = std::move(name);
 			return;
-		} else if (_size == 2) {
+		} else if (size() == 1) {
 			_lh.emplace_back(1);
 			_fmap[name] = { _lh.size() - 1, false };
 			_bmap[_lh.size() - 1].l_key = std::move(name);
@@ -219,36 +250,45 @@ public:
 		}
 
 		// insert into either the lessor or greater half
-		if (1 >= _lh.front()) {
-			_gh.emplace_back(1);
-			_fmap[name] = { _gh.size() - 1, true };
-			_bmap[_gh.size() - 1].g_key = std::move(name);
-			up_helper(_gh.size() - 1, true);
-		} else {
-			_lh.emplace_back(1);
-			_fmap[name] = { _lh.size() - 1, false };
-			_bmap[_lh.size() - 1].l_key = std::move(name);
-			up_helper(_lh.size() - 1, false);
-		}
+		// Always insert into the greater half.
+		// Let rebalance() handle the shuffling from gh to lh.
+		_gh.emplace_back(1);
+		_fmap[name] = { _gh.size() - 1, true };
+		_bmap[_gh.size() - 1].g_key = std::move(name);
+		up_helper(_gh.size() - 1, true);
 
 		// re-balance heaps if needed to maintain median heap structure
 		rebalance();
 	}
 
 	void erase(std::string const& name) {
-		--_size;
 		FInfo const& info = _fmap[name];
-		heap_erase(info.ind, info.in_gh);
-		map_erase(info.in_gh);
-
-		// re-balance heaps if needed to maintain median heap structure
-		rebalance();
+		erase(info.ind, info.in_gh);
 	}
 
 	void increase_key(std::string name) {
 		// Assume name exists. Increase its degree.
 		FInfo const& info = _fmap[name];
 		increase_key(info.ind, info.in_gh);
+	}
+
+	void decrease_key(std::string const& name) {
+		// Erase a vertex if has degree 1.
+		// Otherwise, decrease its key.
+		FInfo const& info = _fmap[name];
+		if (info.in_gh) {
+			if (_gh[info.ind] == 1) {
+				erase(info.ind, info.in_gh);
+			} else {
+				decrease_key(info.ind, info.in_gh);
+			}
+		} else {
+			if (_lh[info.ind] == 1) {
+				erase(info.ind, info.in_gh);
+			} else {
+				decrease_key(info.ind, info.in_gh);
+			}
+		}
 	}
 
 	bool process_edge(std::string name1, std::string name2) {
@@ -279,27 +319,6 @@ public:
 		}
 	}
 
-	void decrease_key(std::string const& name) {
-		// Erase a vertex if has degree 1.
-		// Otherwise, decrease its key.
-		FInfo const& info = _fmap[name];
-		if (info.in_gh) {
-			if (_gh[info.ind] == 1) {
-				heap_erase(info.ind, info.in_gh);
-				map_erase(info.in_gh);
-			} else {
-				decrease_key(info.ind, info.in_gh);
-			}
-		} else {
-			if (_lh[info.ind] == 1) {
-				heap_erase(info.ind, info.in_gh);
-				map_erase(info.in_gh);
-			} else {
-				decrease_key(info.ind, info.in_gh);
-			}
-		}
-	}
-
 	double median() const {
 		if (empty()) {
 			// raise error
@@ -324,11 +343,11 @@ public:
 
 	/* Testing & Debugging */
 	bool empty() const {
-		return _size == 0;
+		return size() == 0;
 	}
 
 	size_t size() const {
-		return _size;
+		return _lh.size() + _gh.size();
 	}
 
 	size_t size_lh() const {
@@ -399,7 +418,32 @@ public:
 
 		return ss.str();
 	}
-
+	
+	std::string dump2() const {
+		std::stringstream ss;
+		
+		// dump lh
+		ss << "----- _lh -----\n";
+		for (size_t i = 0; i < _lh.size(); ++i) {
+			std::unordered_map<size_t, BInfo>::const_iterator const it =
+				_bmap.find(i);
+			std::string const name = (it->second).l_key;
+			ss << i << ": " << name << ", " << _lh[i] << '\n';
+		}
+		ss << '\n';
+		
+		// dump gh
+		ss << "----- _gh -----\n";
+		for (size_t i = 0; i < _gh.size(); ++i) {
+			std::unordered_map<size_t, BInfo>::const_iterator const it =
+				_bmap.find(i);
+			std::string const name = (it->second).g_key;
+			ss << i << ": " << name << ", " << _gh[i] << '\n';
+		}
+		ss << '\n';
+		
+		return ss.str();
+	}
 };
 
 #endif  // MED_HEAP_MAP_HPP_
