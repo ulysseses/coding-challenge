@@ -8,6 +8,8 @@ using std::cout;
 using std::endl;
 
 
+namespace victor {
+
 static time_t create_time(char const* datetime) {
 	tm time_obj;
 	sscanf(datetime, "%4d-%2d-%2dT%2d:%2d:%2dZ",
@@ -101,3 +103,5 @@ TEST(VenmoGraphTest, VenmoGraphWorks) {
 	// cout << "AFTER------------------------------------------------------------\n";
 	// cout << graph.dump() << endl;
 }
+
+}  // namespace victor

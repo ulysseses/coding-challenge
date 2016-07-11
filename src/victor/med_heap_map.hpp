@@ -62,6 +62,7 @@
 #define DES2(i) ((i << 1) + 2)
 
 
+namespace victor {
 /**
 	Median Heap Map
 */
@@ -634,6 +635,8 @@ public:
 
 		return ss.str();
 	}
-};
+};  // class MedHeapMap
+
+}  // namespace victor
 
 #endif  // MED_HEAP_MAP_HPP_

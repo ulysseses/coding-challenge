@@ -7,7 +7,7 @@ int main(int argc, char* argv[]) {
 		std::cout << "rolling_median input_filename output_filename" << std::endl;
 		return 1;
 	}
-	MedDegStream mds(argv[1], argv[2]);
+	victor::MedDegStream mds(argv[1], argv[2]);
 	mds.process();
 	return 0;
 }

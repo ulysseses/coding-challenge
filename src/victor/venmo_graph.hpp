@@ -53,6 +53,7 @@
 // using std::cout;
 // using std::endl;
 
+namespace victor {
 /**
 	VenmoGraph
 */
@@ -262,6 +263,8 @@ public:
 		
 		return ss.str();
 	}
-};
+};  // class VenmoGraph
+
+}  // namespace victor
 
 #endif  // VENMO_GRAPH_HPP_

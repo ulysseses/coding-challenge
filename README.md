@@ -51,3 +51,5 @@ I used the following environment:
 2. Run `./rolling_median <input filename> <output filename>`. Alternatively, `cd` into `insight_testsuite` and run `./run_tests.sh` to test `rolling_median` on your own test data. Feel free to add your own tests.
 
 Note: `insight_testsuite/test_victor` contains the googletest unit tests. These unit tests don't use text files to validate output against, but they still test the code against sample data the code may see in a real setting. I apologize if this is not in accordance with the _required_ repo directory structure.
+
+Note: Please read the header files located in `src/victor`. They contain documentation on the implementation details and public API of the code used.

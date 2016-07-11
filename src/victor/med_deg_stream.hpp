@@ -32,6 +32,7 @@ using std::endl;
 
 using json = nlohmann::json;  // for convenience
 
+namespace victor {
 
 class MedDegStream {
 private:
@@ -122,7 +123,9 @@ public:
 		}
 		_ofs.flush();
 	}
-};
+};  // class MedDegStream
+
+}  // namespace victor
 
 
 #endif  // MED_DEG_STREAM_HPP_

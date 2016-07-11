@@ -6,6 +6,7 @@
 using std::cout;
 using std::endl;
 
+namespace victor {
 
 TEST(MedHeapMapTest, InsertWorks) {
 	MedHeapMap med_heap;
@@ -291,3 +292,5 @@ TEST(MedHeapMapTest, MedianWorks) {
 	med_heap.decrease_key("C");
 	ASSERT_EQ(static_cast<int>(med_heap.median()), 1);
 }
+
+}  // namespace victor
