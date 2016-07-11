@@ -4,3 +4,10 @@
 .DS_Store
 insight_testsuite/results.txt
 insight_testsuite/temp
+
+*.o
+*.a
+rolling_median
+insight_testsuite/test_med_heap_map
+insight_testsuite/test_venmo_graph
+insight_testsuite/test_med_deg_stream
