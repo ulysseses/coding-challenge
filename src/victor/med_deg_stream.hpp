@@ -1,3 +1,20 @@
+/**
+    Insight Data Engineering Code Challenge
+    med_deg_stream.hpp
+    
+    Purpose:
+    
+    MedDegStream, short for Median Degree Stream, is a class for handling the
+    in and out streaming of data. In particular, it has a file handle for both
+    the input file to be processed and an output file. It also has a VenmoGraph
+    (defined in src/victor/venmo_graph.hpp) which holds the vertices and edges
+    of the Venmo payment graph.
+    
+    When the data from the input stream is malformed, MedDegStream will skip
+    that input.
+
+    @author Victor Chen
+*/
 #ifndef MED_DEG_STREAM_HPP_
 #define MED_DEG_STREAM_HPP_
 
@@ -90,8 +107,8 @@ public:
 				cout << "bad created_time 2" << endl;
 				continue;
 			}
-			// tm_year -= 1900
-			// tm_mon--
+			// tm_year is relative to 1900
+			// tm_mon starts at 0, ends at 11
 			dt.tm_year -= 1900;
 			--dt.tm_mon;
 			time_t created_time = mktime(&dt);

@@ -1,3 +1,43 @@
+/**
+    Insight Data Engineering Code Challenge
+    venmo_graph.hpp
+    
+    Purpose:
+    
+    VenmoGraph is the data structure used to store the vertices and edges of the
+    Venmo payment graph. It stores the vertices in a median heap map structure
+    (defined in src/victor/med_heap_map.hpp). When vertices have degree 0, the
+    median heap map takes care of removing it from the graph.
+    
+    The edges are stored in a multi-map ordered by timestamp. That way, edges
+    with a timestamp less than the latest time minus 60 seconds can be
+    expired/deleted via a call of:
+    
+        edges.erase(edges.begin(), edges.upper_bound(latest_time - 60))
+    
+    This operation is efficient because it takes advantage of the tree structure
+    in searching for upper bound time-stamp and traversing the tree up to that
+    point, deleting the nodes in the process. The time complexity is O(n), where
+    n is the distance between the first and last element to be deleted.
+    
+    The graph also indirectly stores edges by keeping track of neighbors of each
+    vertex. Actually, that isn't technically true, because it stores the
+    neighbors of only the lesser of the vertices of an edge, where order is
+    defined by name (string) comparison. Doing so saves space.
+    
+    Storing neighbors is necessary when we need to update an edge with a new
+    time-stamp. One can easily linearly search for the old timestamp of the
+    edge instead of relying on storing neighbors. This is a bad idea because
+    although updating edges with new time-stamps may be a rare occurrence,
+    stopping to search the whole multimap blocks the data streaming pipeline.
+    VenmoGraph may process elements off of a queue (instead of from a file, as
+    is in the Insight Data Engineering Code Challenge), and the queue may reach
+    its full capacity while VenmoGraph is still searching its edges. It is
+    better to pay the price of maintaining the neighbors container to achieve
+    low latency.
+
+    @author Victor Chen
+*/
 #ifndef VENMO_GRAPH_HPP_
 #define VENMO_GRAPH_HPP_
 
@@ -13,6 +53,9 @@
 // using std::cout;
 // using std::endl;
 
+/**
+	VenmoGraph
+*/
 class VenmoGraph {
 private:
 	struct time_comp {
@@ -20,7 +63,7 @@ private:
 			return difftime(rhs, lhs) > 0.0;
 		}
 	};
-
+	
 	typedef std::multimap<time_t,
 						  std::pair<std::string, std::string>,
 						  time_comp>
@@ -29,17 +72,28 @@ private:
 							   std::unordered_map<std::string, time_t>>
 	   	Neighbors;
 
-	MedHeapMap _vertices;
-	Edges _edges;
-	Neighbors _neighbors;
-	time_t _latest_time = 0;
-
+	MedHeapMap _vertices;		// Vertices container
+	Edges _edges;				// Edges container
+	Neighbors _neighbors;		// Neighbors container
+	time_t _latest_time = 0;	// time of an edge with the latest time-stamp
+	
+	/**
+		Sub-routine which:
+		
+		1. checks if the edge exists already.
+		2. updates it with the new timestamp (if it exists),or inserts
+		   it edge into the graph (if it doesn't exist yet).
+	   
+	    @param actor name of the Venmo payment actor.
+	    @param target name of the Venmo payment target.
+	    @param created_time time of the payment.
+	*/
 	void process_helper(std::string actor, std::string target,
 						time_t created_time) {
 		std::string *name1_ptr;
 		std::string *name2_ptr;
 		
-		// Edge identifiers are ordered via string comparison
+		// edge identifiers are ordered via string comparison
 		int cmp_val = actor.compare(target);
 
 		if (cmp_val < 1) {
@@ -92,6 +146,17 @@ private:
 		}
 	}
 
+	/**
+		Routine which:
+		
+		A. inserts the edge if it is before and within the time window.
+		B. erases edges that fall out of the new time window.
+		C. skips the edge if it is before and outside the time window.
+	   
+	    @param actor name of the Venmo payment actor.
+	    @param target name of the Venmo payment target.
+	    @param created_time time of the payment.
+	*/
 	void process(std::string actor, std::string target,
 				 time_t created_time) {
 		if (_latest_time == 0) {
@@ -130,6 +195,15 @@ private:
 	}
 
 public:
+	/**
+		Return the current median, regardless of whether or not the edge is
+		inside or outside the time window.
+	   
+	    @param actor name of the Venmo payment actor.
+	    @param target name of the Venmo payment target.
+	    @param created_time time of the payment.
+	    @return the current median.
+	*/
 	double extract_median(std::string actor, std::string target,
 						  time_t created_time) {
 		process(std::move(actor), std::move(target), created_time);
@@ -137,14 +211,30 @@ public:
 	}
 
 	/* Testing & Debugging */
+	
+	/**
+		Number of vertices.
+		
+		@return the number of vertices in the graph.
+	*/
 	size_t num_vertices() const {
 		return _vertices.size();
 	}
 
+	/**
+		Number of edges.
+		
+		@return the number of edges in the graph.
+	*/
 	size_t num_edges() const {
 		return _edges.size();
 	}
 	
+	/**
+		Dump of the edges and neighbors.
+		
+		@return string of the dump.
+	*/
 	std::string dump() {
 		std::stringstream ss;
 		

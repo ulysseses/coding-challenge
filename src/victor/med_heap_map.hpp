@@ -1,3 +1,44 @@
+/**
+    Insight Data Engineering Code Challenge
+    med_heap_map.hpp
+    
+    Purpose:
+    
+    MedHeapMap, short for Median Heap Map, is a data structure that is used to
+    compute the median of online data. MedHeapMap exposes a public API, used
+    by a VenmoGraph (defined in src/victor/venmo_graph.hpp), for keeping track
+    of vertices and their respective degrees.
+    
+    It consists of 2 heaps (represented as vectors). The "left-half" is a
+    max-heap that keeps track of all seen data that lies to the left of the
+    current median. The "right-half" is a min-heap that keeps track of all data
+    that lies to the right of the current median. The median is easily obtained
+    as either the average of the top of both heaps, or the top of the
+    larger-sized heap. Thus, the median can be obtained in O(1) time, while the
+    heap-map structure allows O(log n) time complexity for insert, delete,
+    increase_key, and decrease_key operations (where n is the current number of
+    elements stored).
+    
+    The median heap obeys 2 invariants:
+    
+    1. The "left-half" and "right-half" differ less than 2 in size.
+    2. The top of the "left-half" max-heap is less than or equal to the top of
+       the "right-half" min-heap.
+       
+	When operations such as insert & decrease_key (temporarily) violate the
+	invariant, the violation is fixed via heap rotation - the top of one heap is
+	popped and pushed into the other heap.
+    
+    MedHeapMap also consists of a forward and backward index which map between
+    the Venmo vertex name and its corresponding location in the Median Heap Map
+    data structure, and vice versa. These maps are used to locate nodes in the
+    heap map at O(1) time, since these are frequently used operations. Everytime
+    the heaps are heapified (i.e. modified to maintain the heap property) or
+    balanced, the corresponding locations stored in the indexes are modified
+    accordingly.
+
+    @author Victor Chen
+*/
 #ifndef MED_HEAP_MAP_HPP_
 #define MED_HEAP_MAP_HPP_
 
@@ -21,23 +62,43 @@
 #define DES2(i) ((i << 1) + 2)
 
 
+/**
+	Median Heap Map
+*/
 class MedHeapMap {
 private:
+	/**
+		Information about which heap and where in the heap and element is
+		stored. This is the value stored in the forward map.
+	*/
 	struct FInfo {
 		size_t ind;
 		bool in_gh;
 	};
-
+	
+	/**
+		Information about which vertex name a heap element corresponds to.
+		This is the value stored in the backwards map.
+	*/
 	struct BInfo {
 		std::string g_key;
 		std::string l_key;
 	};
 
-	std::vector<uint32_t> _lh, _gh;
-	std::unordered_map<std::string, FInfo> _fmap;
-	std::unordered_map<size_t, BInfo> _bmap;
-	size_t _size = 0;
+	std::vector<uint32_t> _lh;						// less-half max-heap
+	std::vector<uint32_t> _gh;						// greater-half min-heap
+	std::unordered_map<std::string, FInfo> _fmap;	// name -> heap location
+													// forward map
+	std::unordered_map<size_t, BInfo> _bmap;		// heap location -> name
+													// backward map
 
+	/**
+	    Swap elements in a heap, forward map, and backward map.
+	
+	    @param i
+	    @param j
+	    @param in_gh whether or not the elements are in _gh.
+	*/
 	void swap_nodes(size_t i, size_t j, bool in_gh) {
 		std::vector<uint32_t>& vec = in_gh ? _gh : _lh;
 
@@ -57,12 +118,17 @@ private:
 			_fmap[_bmap[i].l_key].ind = i;
 		}
 	}
-
-	void up_helper(size_t i, bool in_gh) {
+	
+	/**
+		Float an element up until heap-property is maintained.
+		
+		@param i index of element in heap.
+		@param in_gh whether or not the elements are in _gh.
+	*/
+	void float_up(size_t i, bool in_gh) {
 		std::vector<uint32_t>& vec = in_gh ? _gh : _lh;
 
-		// move the element in vec up the binary tree until the heap property
-		// is satisfied
+		// move the element in vec up the binary tree
 		size_t j = ANC(i);
 		while (i != 0 && ((in_gh && vec[i] < vec[j]) ||
 						  (!in_gh && vec[i] > vec[j]))) {
@@ -72,11 +138,16 @@ private:
 		}
 	}
 
-	void down_helper(size_t i, bool in_gh) {
+	/**
+		Sink an element down until heap-property is maintained.
+		
+		@param i index of element in heap.
+		@param in_gh whether or not the elements are in _gh.
+	*/
+	void sink_down(size_t i, bool in_gh) {
 		std::vector<uint32_t>& vec = in_gh ? _gh : _lh;
 
-		// move the element in vec down the binary tree until the heap property
-		// is satisfied
+		// move the element in vec down the binary tree
 		size_t j = DES1(i);
 		size_t k = DES2(i);
 		size_t const n = vec.size();
@@ -115,9 +186,12 @@ private:
 		return;  // never reached
 	}
 
+	/**
+		Pop an element off of one heap and push it into another heap.
+		
+		@param into_gh whether or not to rotate into _gh.
+	*/
 	void rotate(bool into_gh) {
-		// Pop the top of one heap and push it into the other heap.
-		// Manage the maps accordingly.
 		if (into_gh) {
 			uint32_t degree = _lh.front();
 			swap_nodes(0, _lh.size() - 1, false);
@@ -135,8 +209,8 @@ private:
 				_bmap.erase(it);
 			}
 
-			down_helper(0, false);
-			up_helper(_gh.size() - 1, true);
+			sink_down(0, false);
+			float_up(_gh.size() - 1, true);
 		} else {
 			uint32_t degree = _gh.front();
 			swap_nodes(0, _gh.size() - 1, true);
@@ -154,11 +228,19 @@ private:
 				_bmap.erase(it);
 			}
 
-			down_helper(0, true);
-			up_helper(_lh.size() - 1, false);
+			sink_down(0, true);
+			float_up(_lh.size() - 1, false);
 		}
 	}
 
+
+	/**
+		Erase an element from the heap. Make sure to rotate to fix
+		median heap invariance.
+		
+		@param i index of element in heap.
+		@param in_gh whether or not the elements are in _gh.
+	*/
 	void erase(size_t i, bool in_gh) {
 		if (in_gh) {
 			swap_nodes(i, _gh.size() - 1, true);
@@ -170,7 +252,7 @@ private:
 			if ((it->second).l_key.empty()) {
 				_bmap.erase(it);
 			}
-			down_helper(i, true);
+			sink_down(i, true);
 			if (_lh.size() == _gh.size() + 2) {
 				rotate(true);
 			}
@@ -184,20 +266,27 @@ private:
 			if ((it->second).g_key.empty()) {
 				_bmap.erase(it);
 			}
-			down_helper(i, false);
+			sink_down(i, false);
 			if (_gh.size() == _lh.size() + 2) {
 				rotate(false);
 			}
 		}
 	}
 
+	/**
+		Increment the value of an element in the heap. Make sure to sink/float
+		and rotate to maintain invariance.
+		
+		@param i index of element in heap.
+		@param in_gh whether or not the elements are in _gh.
+	*/
 	void increase_key(size_t i, bool in_gh) {
 		if (in_gh) {
 			++(_gh[i]);
-			down_helper(i, true);
+			sink_down(i, true);
 		} else {
 			++(_lh[i]);
-			up_helper(i, false);
+			float_up(i, false);
 			if (_lh.front() > _gh.front()) {
 				ssize_t const size_diff = ssize_t(_lh.size()) -
 										  ssize_t(_gh.size());
@@ -214,10 +303,17 @@ private:
 		}
 	}
 
+	/**
+		Decrement the value of an element in the heap. Make sure to sink/float
+		and rotate to maintain invariance.
+		
+		@param i index of element in heap.
+		@param in_gh whether or not the elements are in _gh.
+	*/
 	void decrease_key(size_t i, bool in_gh) {
 		if (in_gh) {
 			--(_gh[i]);
-			up_helper(i, true);
+			float_up(i, true);
 			if (_lh.front() > _gh.front()) {
 				ssize_t const size_diff = ssize_t(_lh.size()) -
 										  ssize_t(_gh.size());
@@ -233,11 +329,17 @@ private:
 			}
 		} else {
 			--(_lh[i]);
-			down_helper(i, false);
+			sink_down(i, false);
 		}
 	}
 
 public:
+	/**
+		Insert an element into the heap. Make sure to sink/float
+		and rotate to maintain invariance.
+		
+		@param name name of the element to be inserted.
+	*/
 	void insert(std::string name) {
 		// prepare the heaps if they are empty
 		if (empty()) {
@@ -257,7 +359,7 @@ public:
 			_lh.emplace_back(1);
 			_fmap[name] = { _lh.size() - 1, false };
 			_bmap[_lh.size() - 1].l_key = std::move(name);
-			up_helper(_lh.size() - 1, false);
+			float_up(_lh.size() - 1, false);
 			if (_lh.size() == _gh.size() + 2) {
 				rotate(true);
 			}
@@ -265,24 +367,43 @@ public:
 			_gh.emplace_back(1);
 			_fmap[name] = { _gh.size() - 1, true };
 			_bmap[_gh.size() - 1].g_key = std::move(name);
-			up_helper(_gh.size() - 1, true);
+			float_up(_gh.size() - 1, true);
 			if (_gh.size() == _lh.size() + 2) {
 				rotate(false);
 			}
 		}
 	}
 
+	/**
+		Erase an element from the heap. Make sure to sink/float
+		and rotate to maintain invariance.
+		
+		@param name name of the element to be erased.
+	*/
 	void erase(std::string const& name) {
 		FInfo const& info = _fmap[name];
 		erase(info.ind, info.in_gh);
 	}
 
+	/**
+		Increment the value of an element in the heap. Make sure to sink/float
+		and rotate to maintain invariance.
+		
+		@param name name of the element to be incremented.
+	*/
 	void increase_key(std::string name) {
 		// Assume name exists. Increase its degree.
 		FInfo const& info = _fmap[name];
 		increase_key(info.ind, info.in_gh);
 	}
 
+	/**
+		Decrement the value of an element in the heap. Any vertices with degree
+		0 are erased. Make sure to sink/float and rotate to maintain invariance.
+		
+		@param name name of the element to be decremented.
+		@return true if the element was erased, false otherwise.
+	*/
 	bool decrease_key(std::string const& name) {
 		// Erase a vertex if has degree 1. Return false.
 		// Otherwise, decrease its key. Return true.
@@ -305,7 +426,15 @@ public:
 			}
 		}
 	}
-
+	
+	/**
+		API used by a VenmoGraph object. VenmoGraph inserts/modifies vertices in
+		pairs (i.e. edges). This method will insert/modify both vertices into
+		the graph.
+		
+		@param name1 name of the 1st element to be inserted/incremented.
+		@param name2 name of the 2nd element to be inserted/incremented.
+	*/
 	void process_edge(std::string name1, std::string name2) {
 		std::unordered_map<std::string, FInfo>::const_iterator it1 =
 			_fmap.find(name1);
@@ -333,6 +462,11 @@ public:
 		}
 	}
 
+	/**
+		Current median.
+		
+		@return the current median.
+	*/
 	double median() const {
 		ssize_t const size_diff = ssize_t(_lh.size()) -
 								  ssize_t(_gh.size());
@@ -348,24 +482,50 @@ public:
 		}
 	}
 
+	/**
+		Check if the median heap map is empty.
+		
+		@return whether the heap map is empty or not.
+	*/
 	bool empty() const {
 		return size() == 0;
 	}
 
+	/**
+		Median heap map size.
+		
+		@return the number of elements in the median heap map.
+	*/
 	size_t size() const {
 		return _lh.size() + _gh.size();
 	}
 
+	/**
+		Less-half heap size.
+		
+		@return the number of elements in the less-half heap.
+	*/
 	size_t size_lh() const {
 		return _lh.size();
 	}
 
+	/**
+		Greater-half heap size.
+		
+		@return the number of elements in the greater-half heap.
+	*/
 	size_t size_gh() const {
 		return _gh.size();
 	}
 
 	/* Testing & Debugging */
 
+	/**
+		Degree of an element.
+		
+		@param name name of the element.
+		@return the degree of the element.
+	*/
 	uint64_t degree(std::string name) const {
 		std::unordered_map<std::string, FInfo>::const_iterator found =
 			_fmap.find(name);
@@ -376,16 +536,33 @@ public:
 		}
 	}
 
+	/**
+		Which half the element belongs to.
+		
+		@param name name of the element.
+		@return the half the element belongs to.
+	*/
 	bool in_gh(std::string name) const {
 		std::unordered_map<std::string, FInfo>::const_iterator found =
 			_fmap.find(name);
 		return (found->second).in_gh;
 	}
 
+	/**
+		Whether or not the median heap map contains an element.
+		
+		@param name name of the element.
+		@return whether or not element is contained.
+	*/
 	bool contains(std::string name) const {
 		return _fmap.count(name) != 0;
 	}
 
+	/**
+		Dump of what are inside the less-half and greater-half heaps.
+		
+		@return string of the dump.
+	*/
 	std::string dump() const {
 		std::stringstream ss;
 		
@@ -412,6 +589,11 @@ public:
 		return ss.str();
 	}
 
+	/**
+		Dump of what are inside the heaps as well as the maps.
+		
+		@return string of the dump.
+	*/
 	std::string dump2() const {
 		std::stringstream ss;
 
