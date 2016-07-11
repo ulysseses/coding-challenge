@@ -272,39 +272,43 @@ public:
 		increase_key(info.ind, info.in_gh);
 	}
 
-	void decrease_key(std::string const& name) {
-		// Erase a vertex if has degree 1.
-		// Otherwise, decrease its key.
+	bool decrease_key(std::string const& name) {
+		// Erase a vertex if has degree 1. Return false.
+		// Otherwise, decrease its key. Return true.
 		FInfo const& info = _fmap[name];
 		if (info.in_gh) {
 			if (_gh[info.ind] == 1) {
 				erase(info.ind, info.in_gh);
+				return false;
 			} else {
 				decrease_key(info.ind, info.in_gh);
+				return true;
 			}
 		} else {
 			if (_lh[info.ind] == 1) {
 				erase(info.ind, info.in_gh);
+				return false;
 			} else {
 				decrease_key(info.ind, info.in_gh);
+				return true;
 			}
 		}
 	}
 
-	bool process_edge(std::string name1, std::string name2) {
+	void process_edge(std::string name1, std::string name2) {
 		std::unordered_map<std::string, FInfo>::const_iterator it1 =
 			_fmap.find(name1);
 		if (it1 != _fmap.cend()) {
+			FInfo const& info1 = it1->second;
+			increase_key(info1.ind, info1.in_gh);
 			std::unordered_map<std::string, FInfo>::const_iterator it2 =
 				_fmap.find(name2);
-				if (it2 != _fmap.cend()) {
-					return false;
-				} else {
-					FInfo const& info = it1->second;
-					increase_key(info.ind, info.in_gh);
-					insert(std::move(name2));
-					return true;
-				}
+			if (it2 != _fmap.cend()) {
+				FInfo const& info2 = it2->second;
+				increase_key(info2.ind, info2.in_gh);
+			} else {
+				insert(std::move(name2));
+			}
 		} else {
 			insert(std::move(name1));
 			std::unordered_map<std::string, FInfo>::const_iterator it2 =
@@ -315,7 +319,6 @@ public:
 			} else {
 				insert(std::move(name2));
 			}
-			return true;
 		}
 	}
 

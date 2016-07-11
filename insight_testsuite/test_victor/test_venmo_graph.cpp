@@ -2,6 +2,10 @@
 #include "gtest/gtest.h"
 #include <time.h>
 #include <stdio.h>
+#include <iostream>
+
+using std::cout;
+using std::endl;
 
 
 static time_t create_time(char const* datetime) {
@@ -39,6 +43,7 @@ TEST(VenmoGraphTest, VenmoGraphWorks) {
 	ASSERT_EQ(graph.num_vertices(), 5);
 	ASSERT_EQ(graph.num_edges(), 4);
 
+
 	ASSERT_NEAR(graph.extract_median("A", "E", create_time("2016-07-09T16:19:19Z")),
 		2.000, precision);
 	ASSERT_EQ(graph.num_vertices(), 5);
@@ -74,9 +79,13 @@ TEST(VenmoGraphTest, VenmoGraphWorks) {
 	ASSERT_EQ(graph.num_vertices(), 5);
 	ASSERT_EQ(graph.num_edges(), 5);
 
+	cout << "BEFORE-----------------------------------------------------------\n";
+	cout << graph.dump() << endl;
 	graph.extract_median("F", "H", create_time("2016-07-09T16:20:22Z"));
 	ASSERT_NEAR(graph.extract_median("I", "J", create_time("2016-07-09T16:20:22Z")),
 		1.500, precision);
 	ASSERT_EQ(graph.num_vertices(), 8);
 	ASSERT_EQ(graph.num_edges(), 7);
+	cout << "AFTER------------------------------------------------------------\n";
+	cout << graph.dump() << endl;
 }

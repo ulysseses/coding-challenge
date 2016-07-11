@@ -7,6 +7,11 @@
 #include <time.h>
 #include <utility>
 #include <string>
+#include <sstream>
+
+// #include <iostream>
+// using std::cout;
+// using std::endl;
 
 class VenmoGraph {
 private:
@@ -27,45 +32,62 @@ private:
 	MedHeapMap _vertices;
 	Edges _edges;
 	Neighbors _neighbors;
-	time_t _latest_time;
+	time_t _latest_time = 0;
 
 	void process_helper(std::string actor, std::string target,
 						time_t created_time) {
-		// If both actor and target already exist in the graph, just update
-		// the edges table.
-		// DON'T INCREASE_KEY/INSERT!
-		int cmp_val = actor.compare(target);
-		bool not_seen_before;
 		std::string *name1_ptr;
 		std::string *name2_ptr;
+		
+		// Edge identifiers are ordered via string comparison
+		int cmp_val = actor.compare(target);
 
 		if (cmp_val < 1) {
-			not_seen_before = _vertices.process_edge(actor, target);
 			name1_ptr = &actor;
 			name2_ptr = &target;
 		} else if (cmp_val == 0) {
 			return;
 		} else {
-			not_seen_before = _vertices.process_edge(target, actor);
 			name1_ptr = &target;
 			name2_ptr = &actor;
 		}
+		
+		// check _neighbors for the edge
+		bool not_seen_before;
+		Neighbors::iterator const it = _neighbors.find(*name1_ptr);
+		std::unordered_map<std::string, time_t>::iterator it2;
+		if (it != _neighbors.end()) {
+			it2 = (it->second).find(*name2_ptr);
+			if (it2 != (it->second).end()) {
+				not_seen_before = false;
+			} else {
+				not_seen_before = true;
+			}
+		} else {
+			not_seen_before = true;
+		}
 
 		if (not_seen_before) {
+			// New edge encountered -> just insert into _vertices
+			// and update _edegs & _neighbors.
+			_vertices.process_edge(actor, target);
 			_neighbors[*name1_ptr][*name2_ptr] = created_time;
 			_edges.emplace(created_time,
 				std::make_pair<std::string, std::string>(
 				std::move(*name1_ptr), std::move(*name2_ptr)));
 		} else {
-			time_t old_time = _neighbors[*name1_ptr][*name2_ptr];
-			Edges::const_iterator it = _edges.find(old_time);
-			for (; it != _edges.cend(); ++it) {
-				auto const& p = it->second;
+			// Old edge encountered -> don't insert, just update its time.
+			time_t& time_ref = it2->second;
+			time_t old_time = time_ref;
+			time_ref = created_time;
+			Edges::const_iterator it3 = _edges.find(old_time);
+			for (; it3 != _edges.cend(); ++it3) {
+				auto const& p = it3->second;
 				if (p.first == *name1_ptr && p.second == *name2_ptr) {
 					break;
 				}
 			}
-			_edges.erase(it);
+			_edges.erase(it3);
 			_edges.emplace(created_time,
 				std::make_pair<std::string, std::string>(
 				std::move(*name1_ptr), std::move(*name2_ptr)));
@@ -75,32 +97,34 @@ private:
 	void process(std::string actor, std::string target,
 				 time_t created_time) {
 		if (_latest_time == 0) {
+			// First edge of the graph. Insert it.
 			_latest_time = created_time;
 			process_helper(std::move(actor), std::move(target), created_time);
 		} else {
 			double diff_val = difftime(created_time, _latest_time);
 			if (diff_val > -60.0 && diff_val <= 0.0) {
+				// Edge is before & within the latest time. Deal with it.
 				process_helper(std::move(actor), std::move(target),
 							   created_time);
 			} else if (diff_val > 0.0) {
+				// Edge is the latest time. Erase all edges more than 60 seconds
+				// old. Then, deal with this new edge.
 				_latest_time = created_time;
-
-				// delete nodes with times that are more than 60 seconds
-				// earlier than the latest time
-				Edges::const_iterator ub = 
+				
+				Edges::const_iterator ub =
 					_edges.upper_bound(created_time - 60);
 				for (auto it = _edges.cbegin(); it != ub; ++it) {
 					auto const& p = it->second;
-					_vertices.decrease_key(p.first);
+					bool b1 = _vertices.decrease_key(p.first);
 					_vertices.decrease_key(p.second);
-					Neighbors::iterator found = _neighbors.find(p.first);
-					(found->second).erase(p.second);
-					if ((found->second).empty()) {
-						_neighbors.erase(found);
+					if (b1) {
+						_neighbors.erase(p.first);
+					} else {
+						_neighbors[p.first].erase(p.second);
 					}
 				}
 				_edges.erase(_edges.cbegin(), ub);
-
+				
 				process_helper(std::move(actor), std::move(target),
 							   created_time);
 			}
@@ -121,6 +145,34 @@ public:
 
 	size_t num_edges() const {
 		return _edges.size();
+	}
+	
+	std::string dump() {
+		std::stringstream ss;
+		
+		ss << "----- Edges -----\n";
+		for (auto const& p : _edges) {
+			time_t created_time = p.first;
+			auto const& p2 = p.second;
+			std::string const& name1 = p2.first;
+			std::string const& name2 = p2.second;
+			ss << created_time << ": " << name1 << ' ' << name2 << '\n';
+		}
+		ss << '\n';
+		
+		ss << "----- Neighbors -----\n";
+		for (auto const& p : _neighbors) {
+			std::string const& name = p.first;
+			ss << name << ":\n";
+			for (auto const& p2 : p.second) {
+				std::string const& neighbor = p2.first;
+				time_t created_time = p2.second;
+				ss << "  " << neighbor << " at " << created_time << '\n';
+			}
+		}
+		ss << '\n';
+		
+		return ss.str();
 	}
 };
 
