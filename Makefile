@@ -5,6 +5,12 @@ rolling_median :
 
 test :
 	cd insight_testsuite && $(MAKE)
+	cd insight_testsuite && ./test_med_heap_map
+	cd insight_testsuite && ./test_venmo_graph
+	cd insight_testsuite && ./test_med_deg_stream
 
 clean :
 	rm -f rolling_median
+	rm -f insight_testsuite/test_med_heap_map
+	rm -f insight_testsuite/test_venmo_graph
+	rm -f insight_testsuite/test_med_deg_stream

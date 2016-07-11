@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <string>
+#include <ios>
 
 #include <iostream>
 using std::cout;
@@ -42,6 +43,7 @@ public:
 	MedDegStream(char const* in_filename, char const* out_filename) {
 		_ifs.open(in_filename, std::ifstream::in);
 		_ofs.open(out_filename, std::ofstream::out);
+		_ofs.setf(std::ios::fixed, std::ios::floatfield);
 		_ofs.precision(2);
 	}
 
