@@ -1,0 +1,4 @@
+[*.{cpp,hpp,h,cc,c,py}]
+charset = utf-8
+indent_size = 4
+trim_trailing_whitespace = true
