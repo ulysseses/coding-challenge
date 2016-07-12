@@ -4,6 +4,7 @@
 2. [Complexity](README.md#complexity)
 3. [Environment](README.md#environment)
 4. [Installation and Usage](README.md#installation-and-usage)
+5. [Notes](README>md#notes)
 
 ## Description
 
@@ -50,6 +51,15 @@ I used the following environment:
 1. At the root directory, run `make rolling_median` to build the executable. Optionally run `make test` to run the googletest unit tests.
 2. Run `./rolling_median <input filename> <output filename>`. Alternatively, `cd` into `insight_testsuite` and run `./run_tests.sh` to test `rolling_median` on your own test data. Feel free to add your own tests.
 
-Note: `insight_testsuite/test_victor` contains the googletest unit tests. These unit tests don't use text files to validate output against, but they still test the code against sample data the code may see in a real setting. I apologize if this is not in accordance with the _required_ repo directory structure.
+## Notes
 
-Note: Please read the header files located in `src/victor`. They contain documentation on the implementation details and public API of the code used.
+* `insight_testsuite/test_victor` contains the googletest unit tests. These unit tests don't use text files to validate output against, but they still test the code against sample data the code may see in a real setting. This includes situations where old edges are updated with new times, transactions coming in out of order, and transactions coming in more than 60 seconds of each other. I apologize if this is not in accordance with the _required_ repo directory structure.
+* Please read the header files located in `src/victor`. They contain documentation on the implementation details and public API of the code used.
+
+---
+
+Author: Victor Chen
+
+Date: 07/11/2016
+
+Email: vlchen91 \<at\> gmail \<dot\> com
